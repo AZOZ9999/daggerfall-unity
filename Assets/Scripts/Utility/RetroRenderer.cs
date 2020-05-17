@@ -25,6 +25,7 @@ namespace DaggerfallWorkshop.Utility
     /// </summary>
     public class RetroRenderer : MonoBehaviour
     {
+        public RenderTexture RetroSkyTarget;
         public RenderTexture RetroTexture320x200;
         public RenderTexture RetroTexture640x400;
 
@@ -33,6 +34,7 @@ namespace DaggerfallWorkshop.Utility
 
         public static bool enablePostprocessing = false;
         private Material postprocessMaterial = null;
+        Material testMaterial;
 
         public RenderTexture RetroTexture
         {
@@ -46,12 +48,16 @@ namespace DaggerfallWorkshop.Utility
 
         private void Start()
         {
+            // Get sky reference
+            sky = GameManager.Instance.SkyRig.GetComponent<DaggerfallSky>();
+
+            // Setup
+            Shader testShader = Shader.Find("Daggerfall/RetroTestOnly");
+            testMaterial = new Material(testShader);
+
             // 0 = retro rendering off
             // 1 = retro 320x200 rendering on
             // 2 = retro 640x400 rendering on
-            sky = GameManager.Instance.SkyRig.GetComponent<DaggerfallSky>();
-
-
             if (DaggerfallUnity.Settings.RetroRenderingMode == 1 && RetroTexture320x200)
                 retroTexture = GameManager.Instance.MainCamera.targetTexture = RetroTexture320x200;
             else if (DaggerfallUnity.Settings.RetroRenderingMode == 2 && RetroTexture640x400)
@@ -67,8 +73,8 @@ namespace DaggerfallWorkshop.Utility
             // Conditionally handle classic sky camera
             // Sky may not be enabled at startup (e.g starting in dungeon) so need to check
             // Does nothing when retro world setting disabled as this behaviour is also disabled
-            if (sky && sky.SkyCamera && sky.SkyCamera.targetTexture != retroTexture)
-                sky.SkyCamera.targetTexture = retroTexture;
+            if (sky && sky.SkyCamera && RetroSkyTarget && sky.SkyCamera.targetTexture != RetroSkyTarget)
+                sky.SkyCamera.targetTexture = RetroSkyTarget;
         }
 
         private void OnRenderImage(RenderTexture source, RenderTexture destination)
@@ -76,35 +82,38 @@ namespace DaggerfallWorkshop.Utility
             if (!retroTexture)
                 return;
 
-            if (enablePostprocessing)
-            {
-                if (!postprocessMaterial)
-                {
-                    Shader shader = null;
-                    switch(DaggerfallUnity.Settings.PostProcessingInRetroMode)
-                    {
-                        case 1:
-                            shader = Shader.Find(MaterialReader._DaggerfallRetroPosterizationShaderName);
-                            break;
-                        case 2:
-                            shader = Shader.Find(MaterialReader._DaggerfallRetroPalettizationShaderName);
-                            break;
-                    }
-                    if (shader)
-                        postprocessMaterial = new Material(shader);
-                    else
-                    {
-                        Debug.Log("Couldn't find retro shader " + DaggerfallUnity.Settings.PostProcessingInRetroMode);
-                        enablePostprocessing = false;
-                    }
-                }
-                if (enablePostprocessing && postprocessMaterial)
-                {
-                    Graphics.Blit(retroTexture, null as RenderTexture, postprocessMaterial);
-                    return;
-                }
-            }
-            Graphics.Blit(retroTexture, null as RenderTexture);
+            testMaterial.SetTexture("_SkyTex", RetroSkyTarget);
+            Graphics.Blit(retroTexture, null as RenderTexture, testMaterial);
+
+            //if (enablePostprocessing)
+            //{
+            //    if (!postprocessMaterial)
+            //    {
+            //        Shader shader = null;
+            //        switch(DaggerfallUnity.Settings.PostProcessingInRetroMode)
+            //        {
+            //            case 1:
+            //                shader = Shader.Find(MaterialReader._DaggerfallRetroPosterizationShaderName);
+            //                break;
+            //            case 2:
+            //                shader = Shader.Find(MaterialReader._DaggerfallRetroPalettizationShaderName);
+            //                break;
+            //        }
+            //        if (shader)
+            //            postprocessMaterial = new Material(shader);
+            //        else
+            //        {
+            //            Debug.Log("Couldn't find retro shader " + DaggerfallUnity.Settings.PostProcessingInRetroMode);
+            //            enablePostprocessing = false;
+            //        }
+            //    }
+            //    if (enablePostprocessing && postprocessMaterial)
+            //    {
+            //        Graphics.Blit(retroTexture, null as RenderTexture, postprocessMaterial);
+            //        return;
+            //    }
+            //}
+            //Graphics.Blit(retroTexture, null as RenderTexture);
         }
     }
 }
