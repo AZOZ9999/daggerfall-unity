@@ -28,6 +28,7 @@ namespace DaggerfallWorkshop.Utility
         public RenderTexture RetroSkyTarget;
         public RenderTexture RetroTexture320x200;
         public RenderTexture RetroTexture640x400;
+        public GameObject RetroSnowParticles;
 
         DaggerfallSky sky;
         RenderTexture retroTexture;
@@ -303,6 +304,7 @@ namespace DaggerfallWorkshop.Utility
             new Color32(  65,  41,  33, 255),
             new Color32(  57,  43,  39, 255),
             new Color32(   0,   0,   0, 255),
+            new Color32( 255, 255, 255, 255),
         };
 
         // LUT downsampling
@@ -378,6 +380,11 @@ namespace DaggerfallWorkshop.Utility
                 gameObject.SetActive(false);
 
             enablePostprocessing = DaggerfallUnity.Settings.PostProcessingInRetroMode > 0;
+
+            // Set retro particles
+            PlayerWeather playerWeather = GameManager.Instance.PlayerObject.GetComponent<PlayerWeather>();
+            if (playerWeather && RetroSnowParticles)
+                playerWeather.SnowParticles = RetroSnowParticles;
         }
 
         private void Update()
