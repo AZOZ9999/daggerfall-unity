@@ -377,7 +377,10 @@ namespace DaggerfallWorkshop.Utility
             else if (DaggerfallUnity.Settings.RetroRenderingMode == 2 && RetroTexture640x400)
                 retroTexture = GameManager.Instance.MainCamera.targetTexture = RetroTexture640x400;
             else
+            {
                 gameObject.SetActive(false);
+                return;
+            }
 
             enablePostprocessing = DaggerfallUnity.Settings.PostProcessingInRetroMode > 0;
 
