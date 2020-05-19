@@ -394,6 +394,13 @@ namespace DaggerfallWorkshop.Utility
             // Does nothing when retro world setting disabled as this behaviour is also disabled
             if (sky && sky.SkyCamera && RetroSkyTarget && sky.SkyCamera.targetTexture != RetroSkyTarget)
                 sky.SkyCamera.targetTexture = RetroSkyTarget;
+
+            // Adjust retro particle simulation position to above player position
+            // Retro particles use local simulation space like classic to move with player
+            if (RetroSnowParticles)
+            {
+                RetroSnowParticles.transform.position = GameManager.Instance.PlayerObject.transform.position + Vector3.up * 20;
+            }
         }
 
         private void OnRenderImage(RenderTexture source, RenderTexture destination)
